@@ -1,0 +1,54 @@
+Welcome to the exciting world of campaign media planning! Our client team is working on an extensive campaign for one of the biggest agency clients, and your task is to help them optimize their ad spend across various platforms like Google, Meta, and Amazon.
+
+Each ad receives a budget, and once that budget is exhausted, the ad pauses automatically. The client has approved a total campaign budget of Z euros, and our goal is to maximize the budget spent on the ads while accounting for various fees and costs.
+
+-----------------------------------------------------
+Scenario
+-----------------------------------------------------
+
+In this campaign:
+
+•	The total campaign budget Z includes:
+	o	The total ad spend X.
+	o	Agency fees, calculated as a percentage of the ad spend.
+	o	Fees for ads created using third-party tools.
+	o	Fixed costs for agency hours.
+	
+•	The formula to calculate the total campaign budget is:
+	Z=X+Y1*X+Y2*(X1+X2+X4)+HOURS
+
+	Where:
+	o	X = Total ad spend.
+	o	Xi = Budget for each ad.
+	o	X=X1+X2+…+Xn
+	o	Y1 = Agency fee percentage.
+	o	Y2 = Third-party tool fee percentage.
+	o	HOURS = Fixed cost for agency hours.
+
+Your task is to develop an application that uses the Goal Seek algorithm to find the maximum budget for one specific ad while ensuring the total budget remains within the approved amount Z. Consider budget for other ads is already defined.
+
+-----------------------------------------------------
+Task
+-----------------------------------------------------
+
+•	Goal Seek Function: Implement a function in C# (or other OOP language like Java, C++) that iterates through potential values to find the budget for the specific ad that fits the desired total budget Z.
+•	User Interface: Design any user interface you find suitable for this task (console, GUI, web-based, etc.).
+
+-----------------------------------------------------
+Submission Guidelines
+-----------------------------------------------------
+
+•	Submit the complete solution and a README file with instructions on how to run the application on your GitHub repo and include link to the repo in your application form.
+•	Ensure the code is well-documented and follows best practices for coding standards and readability.
+•	Include test cases demonstrating the functionality with different target values and initial guesses.
+
+-----------------------------------------------------
+Evaluation Criteria
+-----------------------------------------------------
+
+•	Correctness: The application correctly finds the budget for the specific ad using the Goal Seek function.
+•	Code Quality: Code is clean, well-commented, and adheres to standard conventions.
+•	User Interaction: The application interacts with the user effectively, handling input and output gracefully.
+•	Error Handling: Proper error handling for cases where the function does not converge.
+
+Enjoy optimizing and happy coding!
