@@ -18,6 +18,7 @@ namespace Dentsu_Software_Engineer_Challenge
         private decimal _hourCost;
         private bool _newAdIsThirdParty;
         private int _maxIterations;
+        private bool _debug;
 
         /// <summary>
         /// Constructor for a new solver instance
@@ -30,9 +31,9 @@ namespace Dentsu_Software_Engineer_Challenge
         /// <param name="hourCost">Fixed cost for agency hours</param>
         /// <param name="newAdIsThirdParty">Flag specifying if the new ad will incur third party tool fees</param>
         /// <param name="maxIterations">Max number of GoalSeek iterations</param>
-        /// <param name="epsilon">Maximum difference between spend and budget to be considered close enough</param>
+        /// <param name="debug">Flag indicating iteration information should be printed</param>
         public Solver(decimal maxBudget, IEnumerable<decimal> inHouseAdBudgets, IEnumerable<decimal> thirdPartyAdBudgets,
-            int agencyFeePercent, int thirdPartyFeePercent, decimal hourCost, bool newAdIsThirdParty = false, int maxIterations = 25)
+            int agencyFeePercent, int thirdPartyFeePercent, decimal hourCost, bool newAdIsThirdParty = false, int maxIterations = 25, bool debug = false)
         {
             
             // Set all parameters
@@ -44,6 +45,7 @@ namespace Dentsu_Software_Engineer_Challenge
             _thirdPartyAdSum      = thirdPartyAdBudgets.Select(x => Math.Max(x, decimal.Zero)).Sum();
             _newAdIsThirdParty    = newAdIsThirdParty;
             _maxIterations        = Math.Max(maxIterations, 0);
+            _debug                = debug;
         }
 
         /// <summary>
@@ -97,11 +99,13 @@ namespace Dentsu_Software_Engineer_Challenge
                 // Determine current total spending on ads and fees
                 var totalSpend = TotalSpend(budgetAllocation);
                 
-                Log.Information("range is {A}-{B}, totalSpend is {C} from budget allocation of {D}",
-                    minVal, maxVal, totalSpend, budgetAllocation);
+                if(_debug){
+                    Log.Information("iter {1} range is {A}-{B}, totalSpend is {C} from budget allocation of {D}",
+                    iteration, minVal, maxVal, totalSpend, budgetAllocation);
+                }
                 
                 // If we have converged to the _maxBudget, return our current guess
-                if (_maxBudget-totalSpend <= 0.01m)
+                if (_maxBudget >= totalSpend && _maxBudget - totalSpend <= 0.01m)
                 {
                     return budgetAllocation;
                 }

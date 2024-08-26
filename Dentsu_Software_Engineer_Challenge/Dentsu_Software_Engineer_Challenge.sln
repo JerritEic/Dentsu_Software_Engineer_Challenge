@@ -2,6 +2,8 @@
 Microsoft Visual Studio Solution File, Format Version 12.00
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Dentsu_Software_Engineer_Challenge", "Dentsu_Software_Engineer_Challenge.csproj", "{6522069A-3F1B-4D8C-AE02-23569A137FEB}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Tests", "Tests\Tests.csproj", "{CABBC4FB-00A1-420A-BE46-B23D1FC527EF}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -12,5 +14,9 @@ Global
 		{6522069A-3F1B-4D8C-AE02-23569A137FEB}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{6522069A-3F1B-4D8C-AE02-23569A137FEB}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{6522069A-3F1B-4D8C-AE02-23569A137FEB}.Release|Any CPU.Build.0 = Release|Any CPU
+		{CABBC4FB-00A1-420A-BE46-B23D1FC527EF}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{CABBC4FB-00A1-420A-BE46-B23D1FC527EF}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{CABBC4FB-00A1-420A-BE46-B23D1FC527EF}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{CABBC4FB-00A1-420A-BE46-B23D1FC527EF}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 EndGlobal
