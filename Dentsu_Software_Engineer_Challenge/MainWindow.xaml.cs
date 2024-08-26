@@ -13,6 +13,7 @@ using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using System.Windows.Navigation;
 using System.Windows.Shapes;
+using Serilog;
 
 
 namespace Dentsu_Software_Engineer_Challenge
@@ -22,59 +23,59 @@ namespace Dentsu_Software_Engineer_Challenge
     /// </summary>
     public partial class MainWindow : Window
     {
+        private List<Ad> _inHouseAdBudgetsData;
+        private List<Ad> _thirdPartyAdBudgetsData;
+        
+        /// <summary>
+        /// Sets up window from definitions in MainWindow.xaml and populates two ad budget <see cref="DataGrid"/>
+        /// </summary>
         public MainWindow()
         {
             InitializeComponent();
-        }
-        
-        
-        /// <summary>
-        /// Allows entering only text that is a valid number.
-        /// </summary>
-        /// <param name="sender">Element receiving text</param>
-        /// <param name="e">Text entry event</param>
-        private void NumericTextEntry(object sender, TextCompositionEventArgs e)
-        {
-            // Assure input is numeric value
-            if (!IsTextNumeric(e.Text))
-            {
-                e.Handled = true; 
-            }
-        }
-
-        /// <summary>
-        /// Checks if <paramref name="text"/> contains numeric values only.
-        /// </summary>
-        /// <param name="text">Element receiving text</param>
-        /// <returns> True if <paramref name="text"/> is numeric, False otherwise.</returns>
-        private bool IsTextNumeric(string text)
-        {
-            // Regex matching only positive integers, no leading sign or decimal.
-            Regex regex = new Regex(@"[0-9]+");
-            return regex.IsMatch(text);
+            
+            _inHouseAdBudgetsData = new List<Ad>();
+            _inHouseAdBudgetsData.Add(new Ad() {Value=1m});
+            _inHouseAdBudgetsData.Add(new Ad() {Value=1m});
+            InHouseAdBudgetsDataGrid.ItemsSource = _inHouseAdBudgetsData;
+            
+            _thirdPartyAdBudgetsData = new List<Ad>();
+            _thirdPartyAdBudgetsData.Add(new Ad() {Value=1m});
+            _thirdPartyAdBudgetsData.Add(new Ad() {Value=1m});
+            ThirdPartyAdBudgetsDataGrid.ItemsSource = _thirdPartyAdBudgetsData;
+            
         }
         
         /// <summary>
-        /// Allows pasting only text that is a valid number.
+        /// Wrapper around a <see cref="Value"/> for an ad budget
         /// </summary>
-        /// <param name="sender">Element receiving text</param>
-        /// <param name="e">Text paste event</param>
-        private void NumericTextPasting(object sender, DataObjectPastingEventArgs e)
+        public class Ad
         {
-            if (e.DataObject.GetDataPresent(typeof(string)))
-            {
-                string text = (string)e.DataObject.GetData(typeof(string));
-                if (!IsTextNumeric(text))
-                {
-                    // Abort paste command if the data is not numeric
-                    e.CancelCommand(); 
-                }
-            }
-            else
-            {
-                // Abort paste command if the data is not a string
-                e.CancelCommand(); 
-            }
+            public decimal Value { get; set; }
+        }
+    
+        /// <summary>
+        /// Called when calculate button is clicked, retrieves ad budget and fee parameters from frontend controls
+        /// </summary>
+        private void CalculateButton_Click(object sender, RoutedEventArgs e)
+        {
+            
+            var maxBudget = Convert.ToDecimal(BudgetSliderValue.Value);
+            
+            var agencyFeePercent = Convert.ToInt32(AgencyFeeSliderValue.Value);
+            
+            var thirdPartyFeePercent = Convert.ToInt32(ThirdPartyFeeSliderValue.Value);
+            
+            var hourCost = Convert.ToDecimal(AgencyHourSliderValue.Value);
+            
+            var inHouseAdBudgets = _inHouseAdBudgetsData.Select(x => x.Value).ToArray();
+            var thirdPartyAdBudgets = _thirdPartyAdBudgetsData.Select(x => x.Value).ToArray();
+            
+            var newAdIsThirdParty = IsThirdPartyCheckbox.IsChecked != null && IsThirdPartyCheckbox.IsChecked.Value;
+            
+            var maxIterations = 20;
+            var debug = false;
+            
+           
         }
     }
 }

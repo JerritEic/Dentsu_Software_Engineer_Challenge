@@ -6,23 +6,68 @@
         xmlns:local="clr-namespace:Dentsu_Software_Engineer_Challenge"
         mc:Ignorable="d"
         Title="Ad Budget Optimizer" Height="450" Width="800">
-        <Grid VerticalAlignment="Top" HorizontalAlignment="Center" ShowGridLines="True" Width="400" Height="Auto">
-                <Grid.ColumnDefinitions>
-                        <ColumnDefinition />
-                        <ColumnDefinition />
-                </Grid.ColumnDefinitions>
-                <Grid.RowDefinitions>
-                        <RowDefinition />
-                        <RowDefinition />
-                        <RowDefinition />
-                        <RowDefinition />
-                </Grid.RowDefinitions>
+        
+        <StackPanel Margin="15" Orientation="Horizontal" Height = "200">
+                <WrapPanel Orientation="Vertical">
+                        <TextBlock Text="Total Budget:  " />
+                        <DockPanel VerticalAlignment="Center" Margin="0,5,0,0" Width="200">
+                                <TextBox Text="{Binding ElementName=BudgetSliderValue, Path=Value, UpdateSourceTrigger=PropertyChanged}" DockPanel.Dock="Right" TextAlignment="Right" Width="60" />
+                                <Slider Maximum="255" Value="25" TickPlacement="BottomRight" TickFrequency="5" IsSnapToTickEnabled="True" Name="BudgetSliderValue" />
+                        </DockPanel>
+                        <TextBlock Text="Agency Fee Percent:  " />
+                        <DockPanel VerticalAlignment="Center" Margin="0,5,0,0" Width="200">
+                                <TextBox Text="{Binding ElementName=AgencyFeeSliderValue, Path=Value, UpdateSourceTrigger=PropertyChanged}" DockPanel.Dock="Right" TextAlignment="Right" Width="60" />
+                                <Slider Minimum="0" Maximum="100" SmallChange="1" LargeChange="10" Value="5"
+                                        Ticks="0, 10, 20, 30, 40, 50, 60, 70, 80, 90, 100"
+                                        TickPlacement="BottomRight" IsSnapToTickEnabled="True" Name="AgencyFeeSliderValue" />
+                        </DockPanel>
+                        <TextBlock Text="Third Party Fee Percent:  " />
+                        <DockPanel VerticalAlignment="Center" Margin="0,5,0,0" Width="200">
+                                <TextBox Text="{Binding ElementName=ThirdPartyFeeSliderValue, Path=Value, UpdateSourceTrigger=PropertyChanged}" DockPanel.Dock="Right" TextAlignment="Right" Width="60" />
+                                <Slider Minimum="0" Maximum="100" SmallChange="1" LargeChange="10" Value="5"
+                                        Ticks="0, 10, 20, 30, 40, 50, 60, 70, 80, 90, 100" TickPlacement="BottomRight" IsSnapToTickEnabled="True" Name="ThirdPartyFeeSliderValue" />
+                        </DockPanel>
+                        <TextBlock Text="Agency Hour Costs:  " />
+                        <DockPanel VerticalAlignment="Center" Margin="0,5,0,0" Width="200">
+                                <TextBox Text="{Binding ElementName=AgencyHourSliderValue, Path=Value, UpdateSourceTrigger=PropertyChanged}" DockPanel.Dock="Right" TextAlignment="Right" Width="60" />
+                                <Slider Minimum="0" Maximum="100" SmallChange="1" LargeChange="10" Value="5"
+                                        Ticks="0, 10, 20, 30, 40, 50, 60, 70, 80, 90, 100" TickPlacement="BottomRight" IsSnapToTickEnabled="True" Name="AgencyHourSliderValue" />
+                        </DockPanel>
+                </WrapPanel>
+                <WrapPanel Orientation="Vertical" Margin="15,0,0,0">
+                        <Grid Margin="0">
+                                <DataGrid Name="InHouseAdBudgetsDataGrid" AutoGenerateColumns="False" Height="150" Width="150" RowHeight="20" CanUserResizeColumns="False" CanUserResizeRows="False" CanUserDeleteRows="True">
+                                        <DataGrid.Columns>
+                                                <DataGridTextColumn Header="In House Ad Budgets" Binding="{Binding Value}" />
+                                        </DataGrid.Columns>
+                                </DataGrid>
+                        </Grid>
+                </WrapPanel>
+                <WrapPanel Orientation="Vertical" Margin="15,0,0,0">
+                        <Grid Margin="0">
+                                <DataGrid Name="ThirdPartyAdBudgetsDataGrid" AutoGenerateColumns="False" Height="150" Width="150" RowHeight="20" CanUserResizeColumns="False" CanUserResizeRows="False" CanUserDeleteRows="True">
+                                        <DataGrid.Columns>
+                                                <DataGridTextColumn Header="Third Party Ad Budgets" Binding="{Binding Value}" />
+                                        </DataGrid.Columns>
+                                </DataGrid>
+                        </Grid>
+                </WrapPanel>
+                <WrapPanel Orientation="Vertical" Margin="15,0,0,0">
+                         <CheckBox Name="IsThirdPartyCheckbox" IsChecked="{Binding IsChecked}">New Ad is Third Party</CheckBox>
+                        
+                        <Button Click="CalculateButton_Click" Margin="0,5,0,5">Calculate Budget for New Ad</Button>
+                        
+                        <Border Background="GhostWhite" BorderBrush="Silver" BorderThickness="1" CornerRadius="8,8,3,3" Margin="0,0,0,0">
+                                <WrapPanel Orientation="Vertical">
+                                        <TextBlock Text="New Ad Budget:" />
+                                        <TextBox DockPanel.Dock="Right" Text=""/>
+                                        <TextBlock Text="Total Spent:" />
+                                        <TextBox DockPanel.Dock="Right" Text=""/>
+                                </WrapPanel>
+                        </Border>
+                </WrapPanel>
                 
-                <TextBlock Name="textBlock1" TextWrapping="Wrap">Entry 1</TextBlock>
-                <TextBox Grid.ColumnSpan="1" Grid.Column="1" Grid.Row="0" x:Name="NumericTextBox" PreviewTextInput="NumericTextEntry" DataObject.Pasting="NumericTextPasting" />
-                <TextBlock Grid.Column="0" Grid.Row="1"  Name="textBlock2" TextWrapping="Wrap">Entry 2</TextBlock>
-                <TextBox Grid.ColumnSpan="1" Grid.Column="1" Grid.Row="1" x:Name="NumericTextBox2" PreviewTextInput="NumericTextEntry" DataObject.Pasting="NumericTextPasting" />
-
-        </Grid>
+        </StackPanel>
+        
         
 </Window>
