@@ -14,7 +14,6 @@ using System.Windows.Media.Imaging;
 using System.Windows.Navigation;
 using System.Windows.Shapes;
 
-//https://pythoninoffice.com/replicate-excel-goal-seek-in-python/
 
 namespace Dentsu_Software_Engineer_Challenge
 {

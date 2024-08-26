@@ -18,30 +18,17 @@ namespace Dentsu_Software_Engineer_Challenge
     {
 
         /// <summary>
-        /// Run when application is started
+        /// Configure application when first started
         /// </summary> 
         protected override void OnStartup(StartupEventArgs e)
         {
             base.OnStartup(e);
+            // Configure logging to console and file
             Log.Logger = new LoggerConfiguration()
                 .MinimumLevel.Debug()
                 .WriteTo.Console()
-                .WriteTo.File("logs/app.txt", rollingInterval: RollingInterval.Day)
+                .WriteTo.File("logs/app.log", rollingInterval: RollingInterval.Day)
                 .CreateLogger();
-
-            decimal maxBudget = 25m;
-            decimal[] inHouseAdBudgets = {1m};
-            decimal[] thirdPartyAdBudgets = {1m,1m,1m};
-            int agencyFeePercent = 5;
-            int thirdPartyFeePercent = 5;
-            decimal hourCost = 1m;
-            bool newAdIsThirdParty = false;
-            int maxIterations = 20;
-
-            var solver = new Solver(maxBudget,  inHouseAdBudgets, thirdPartyAdBudgets, agencyFeePercent, thirdPartyFeePercent,
-                hourCost, newAdIsThirdParty, maxIterations);
-            solver.GoalSeek();
-
         }
         
         /// <summary>
