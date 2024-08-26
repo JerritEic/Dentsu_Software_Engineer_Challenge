@@ -1,5 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.ComponentModel;
+using System.Globalization;
 using System.Linq;
 using System.Text;
 using System.Text.RegularExpressions;
@@ -21,10 +23,53 @@ namespace Dentsu_Software_Engineer_Challenge
     /// <summary>
     /// Interaction logic for MainWindow.xaml
     /// </summary>
-    public partial class MainWindow : Window
+    public partial class MainWindow
     {
-        private List<Ad> _inHouseAdBudgetsData;
-        private List<Ad> _thirdPartyAdBudgetsData;
+        // Binding for ad budget data grids
+        private readonly List<Ad> _inHouseAdBudgetsData;
+        private readonly List<Ad> _thirdPartyAdBudgetsData;
+        
+        // Binding for total budget text box
+        private decimal _totalBudget;
+        public decimal TotalBudget
+        {
+            get => _totalBudget;
+            set
+            {
+                if (value == _totalBudget)
+                    return;
+                _totalBudget = value;
+                OnPropertyChanged(default);
+            }
+        }
+        
+        // Binding for agency hour cost text box
+        private decimal _agencyHourCost;
+        public decimal AgencyHourCost
+        {
+            get => _agencyHourCost;
+            set
+            {
+                if (value == _agencyHourCost)
+                    return;
+                _agencyHourCost = value;
+                OnPropertyChanged(default);
+            }
+        }
+        
+        // Binding for starting ad budget guess text box
+        private decimal _startingGuess;
+        public decimal StartingGuess
+        {
+            get => _startingGuess;
+            set
+            {
+                if (value == _startingGuess)
+                    return;
+                _startingGuess = value;
+                OnPropertyChanged(default);
+            }
+        }
         
         /// <summary>
         /// Sets up window from definitions in MainWindow.xaml and populates two ad budget <see cref="DataGrid"/>
@@ -32,17 +77,19 @@ namespace Dentsu_Software_Engineer_Challenge
         public MainWindow()
         {
             InitializeComponent();
+            DataContext = this;
             
-            _inHouseAdBudgetsData = new List<Ad>();
-            _inHouseAdBudgetsData.Add(new Ad() {Value=1m});
-            _inHouseAdBudgetsData.Add(new Ad() {Value=1m});
+            _inHouseAdBudgetsData = [new Ad() { Value = 1m }, new Ad() { Value = 1m }];
             InHouseAdBudgetsDataGrid.ItemsSource = _inHouseAdBudgetsData;
             
-            _thirdPartyAdBudgetsData = new List<Ad>();
-            _thirdPartyAdBudgetsData.Add(new Ad() {Value=1m});
-            _thirdPartyAdBudgetsData.Add(new Ad() {Value=1m});
+            _thirdPartyAdBudgetsData = [new Ad() { Value = 1m }, new Ad() { Value = 1m }];
             ThirdPartyAdBudgetsDataGrid.ItemsSource = _thirdPartyAdBudgetsData;
-            
+
+            _totalBudget = 25;
+
+            _agencyHourCost = 5;
+
+            _startingGuess = 25;
         }
         
         /// <summary>
@@ -50,7 +97,7 @@ namespace Dentsu_Software_Engineer_Challenge
         /// </summary>
         public class Ad
         {
-            public decimal Value { get; set; }
+            public decimal Value { get; init; }
         }
     
         /// <summary>
@@ -58,24 +105,38 @@ namespace Dentsu_Software_Engineer_Challenge
         /// </summary>
         private void CalculateButton_Click(object sender, RoutedEventArgs e)
         {
+            var arguments = new Solver.SolverArguments(
+                maxBudget: _totalBudget,
+                startingGuess: _startingGuess,
+                inHouseAdBudgets: _inHouseAdBudgetsData.Select(x => x.Value).ToArray(),
+                thirdPartyAdBudgets: _thirdPartyAdBudgetsData.Select(x => x.Value).ToArray(),
+                agencyFeePercent: Convert.ToSingle(AgencyFeeSliderValue.Value),
+                thirdPartyFeePercent: Convert.ToSingle(ThirdPartyFeeSliderValue.Value),
+                hourCost: _agencyHourCost,
+                newAdIsThirdParty: IsThirdPartyCheckbox.IsChecked != null && IsThirdPartyCheckbox.IsChecked.Value,
+                maxIterations: 20,
+                debug: true);
             
-            var maxBudget = Convert.ToDecimal(BudgetSliderValue.Value);
-            
-            var agencyFeePercent = Convert.ToInt32(AgencyFeeSliderValue.Value);
-            
-            var thirdPartyFeePercent = Convert.ToInt32(ThirdPartyFeeSliderValue.Value);
-            
-            var hourCost = Convert.ToDecimal(AgencyHourSliderValue.Value);
-            
-            var inHouseAdBudgets = _inHouseAdBudgetsData.Select(x => x.Value).ToArray();
-            var thirdPartyAdBudgets = _thirdPartyAdBudgetsData.Select(x => x.Value).ToArray();
-            
-            var newAdIsThirdParty = IsThirdPartyCheckbox.IsChecked != null && IsThirdPartyCheckbox.IsChecked.Value;
-            
-            var maxIterations = 20;
-            var debug = false;
-            
-           
+            var worker = new BackgroundWorker();
+            worker.DoWork += worker_RunSolver;
+            worker.RunWorkerCompleted += worker_SolverCompleted;
+            worker.RunWorkerAsync(arguments);
         }
+
+        private static void worker_RunSolver(object? sender, DoWorkEventArgs e)
+        {
+            var args = (Solver.SolverArguments) (e.Argument ?? throw new InvalidOperationException());
+            
+            e.Result = new Solver(args).GoalSeek();
+        }
+
+        private void worker_SolverCompleted(object? sender, RunWorkerCompletedEventArgs e)
+        {
+            var result = (Solver.SolverResult) (e.Result ?? throw new InvalidOperationException());
+            NewAdBudgetTextBox.Text = result.NewAdBudget.ToString(CultureInfo.InvariantCulture);
+            TotalSpentTextBox.Text  = result.TotalSpent.ToString(CultureInfo.InvariantCulture);
+            
+        }
+
     }
 }
