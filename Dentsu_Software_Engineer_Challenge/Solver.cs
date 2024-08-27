@@ -20,10 +20,16 @@ namespace Dentsu_Software_Engineer_Challenge
             public decimal MaxBudget {get; set;}
             // Initial ad budget guess
             public decimal StartingGuess {get; set;}
+            // Budgets of ads that don't use third party tools
+            public IEnumerable<decimal> InHouseAdBudgets {get; set;}
+            // Budgets of ads that use third party tools
+            public IEnumerable<decimal> ThirdPartyAdBudgets {get; set;}
+            
             // Sum of all in-house ad budgets
-            public decimal InHouseAdSum {get; set;}
+            public decimal InHouseAdSum => InHouseAdBudgets.Sum();
+
             // Sum of all third-party ad budgets
-            public decimal ThirdPartyAdSum  {get; set;}
+            public decimal ThirdPartyAdSum  => ThirdPartyAdBudgets.Sum();
             // Percentage fee taken by agency
             public float AgencyFeePercent  {get; set;}
             // Percentage fee taken by third parties
@@ -47,9 +53,10 @@ namespace Dentsu_Software_Engineer_Challenge
             /// <param name="thirdPartyFeePercent">Percentage fee third party tools</param>
             /// <param name="hourCost">Fixed cost for agency hours</param>
             /// <param name="newAdIsThirdParty">Flag specifying if the new ad will incur third party tool fees</param>
+            /// <param name="name">Name for this set of solver arguments</param>
             /// <param name="debug">Flag indicating iteration information should be printed</param>
             public SolverArguments(decimal maxBudget, decimal startingGuess, IEnumerable<decimal> inHouseAdBudgets, IEnumerable<decimal> thirdPartyAdBudgets,
-                float agencyFeePercent, float thirdPartyFeePercent, decimal hourCost, bool newAdIsThirdParty = false, int maxIterations = 25, bool debug = false)
+                float agencyFeePercent, float thirdPartyFeePercent, decimal hourCost, bool newAdIsThirdParty = false, bool debug = false)
             {
                 // Set all parameters and perform sanity checks
                 MaxBudget            = Math.Max(maxBudget, decimal.Zero);
@@ -57,25 +64,12 @@ namespace Dentsu_Software_Engineer_Challenge
                 AgencyFeePercent     = Math.Clamp(agencyFeePercent, 0, 100);
                 ThirdPartyFeePercent = Math.Clamp(thirdPartyFeePercent, 0, 100);
                 HourCost             = Math.Max(hourCost, decimal.Zero);
-                InHouseAdSum         = inHouseAdBudgets.Select(x => Math.Max(x, decimal.Zero)).Sum();
-                ThirdPartyAdSum      = thirdPartyAdBudgets.Select(x => Math.Max(x, decimal.Zero)).Sum();
+                InHouseAdBudgets     = inHouseAdBudgets.Select(x => Math.Max(x, decimal.Zero));
+                ThirdPartyAdBudgets  = thirdPartyAdBudgets.Select(x => Math.Max(x, decimal.Zero));
                 NewAdIsThirdParty    = newAdIsThirdParty;
                 Debug                = debug;
             }
-
-            public static SolverArguments Empty()
-            {
-                return new SolverArguments(maxBudget: 0m,
-                    startingGuess: 0m,
-                    inHouseAdBudgets: [],
-                    thirdPartyAdBudgets: [],
-                    agencyFeePercent: 0,
-                    thirdPartyFeePercent: 0,
-                    hourCost: decimal.Zero,
-                    newAdIsThirdParty: false,
-                    maxIterations: 20,
-                    debug: true);
-            }
+            
         }
 
         /// <summary>
@@ -87,7 +81,7 @@ namespace Dentsu_Software_Engineer_Challenge
             public decimal TotalSpent { get; set; } = totalSpent;
         }
 
-        public SolverArguments Args { get; set; }
+        private SolverArguments Args { get; set; }
         
         /// <summary>
         /// Constructor for a new solver instance
@@ -115,7 +109,7 @@ namespace Dentsu_Software_Engineer_Challenge
         
         
         /// <summary>
-        /// Calculates a new guess rounded to cents within a range
+        /// Calculates a new guess as the midpoint of a range rounded to cents
         /// </summary>
         /// <param name="minVal">Minimum value</param>
         /// <param name="maxVal">Maximum value</param>
@@ -142,10 +136,9 @@ namespace Dentsu_Software_Engineer_Challenge
             var maxVal = Args.MaxBudget - totalSpend;
             var minVal = decimal.Zero;
             var budgetAllocation = Math.Clamp(Args.StartingGuess, minVal, maxVal);
-            var iteration = 0;
 
             // Iterate guesses to find optimal value
-            while(true)
+            for(var iteration = 0; iteration < 1000; iteration++)
             {
                 // Determine current total spending on ads and fees
                 totalSpend = TotalSpend(budgetAllocation);
@@ -156,7 +149,7 @@ namespace Dentsu_Software_Engineer_Challenge
                 }
                 
                 // If we have converged to the _maxBudget, return our current guess
-                if (Args.MaxBudget >= totalSpend && Args.MaxBudget - totalSpend <= 0.01m)
+                if (Args.MaxBudget >= totalSpend && Args.MaxBudget - totalSpend < 0.01m)
                 {
                     return new SolverResult(budgetAllocation, totalSpend);
                 }
@@ -177,11 +170,8 @@ namespace Dentsu_Software_Engineer_Challenge
                 budgetAllocation = GuessFromRange(minVal, maxVal);
                 iteration++;
             }
-            
             return new SolverResult(budgetAllocation, totalSpend);
         }
-        
-        
         
         
     }

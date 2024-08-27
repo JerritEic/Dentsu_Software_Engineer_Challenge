@@ -1,21 +1,11 @@
 ﻿using System;
-using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Globalization;
 using System.Linq;
-using System.Text;
-using System.Text.RegularExpressions;
-using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Data;
-using System.Windows.Documents;
-using System.Windows.Input;
-using System.Windows.Media;
-using System.Windows.Media.Imaging;
-using System.Windows.Navigation;
-using System.Windows.Shapes;
-using Serilog;
 
 
 namespace Dentsu_Software_Engineer_Challenge
@@ -25,79 +15,127 @@ namespace Dentsu_Software_Engineer_Challenge
     /// </summary>
     public partial class MainWindow
     {
-        // Binding for ad budget data grids
-        private readonly List<Ad> _inHouseAdBudgetsData;
-        private readonly List<Ad> _thirdPartyAdBudgetsData;
         
-        // Binding for total budget text box
-        private decimal _totalBudget;
-        public decimal TotalBudget
-        {
-            get => _totalBudget;
-            set
-            {
-                if (value == _totalBudget)
-                    return;
-                _totalBudget = value;
-                OnPropertyChanged(default);
-            }
-        }
+        // Bound lists for ad budget data grids
+        private ObservableCollection<Ad> _inHouseAdBudgetsData;
+        private ObservableCollection<Ad> _thirdPartyAdBudgetsData;
         
-        // Binding for agency hour cost text box
-        private decimal _agencyHourCost;
-        public decimal AgencyHourCost
-        {
-            get => _agencyHourCost;
-            set
-            {
-                if (value == _agencyHourCost)
-                    return;
-                _agencyHourCost = value;
-                OnPropertyChanged(default);
-            }
-        }
+        // Bound value for total budget text box
+        public UiDecimal TotalBudget = new UiDecimal(0);
         
-        // Binding for starting ad budget guess text box
-        private decimal _startingGuess;
-        public decimal StartingGuess
-        {
-            get => _startingGuess;
-            set
-            {
-                if (value == _startingGuess)
-                    return;
-                _startingGuess = value;
-                OnPropertyChanged(default);
-            }
-        }
+        // Bound value for agency hour cost text box
+        public UiDecimal AgencyHourCost = new UiDecimal(0);
+
+        // Bound value for starting guess text box
+        public UiDecimal StartingGuess = new UiDecimal(0);
+        
         
         /// <summary>
-        /// Sets up window from definitions in MainWindow.xaml and populates two ad budget <see cref="DataGrid"/>
+        /// Sets up window from definitions in MainWindow.xaml and initializes UI bindings 
         /// </summary>
         public MainWindow()
         {
             InitializeComponent();
             DataContext = this;
             
-            _inHouseAdBudgetsData = [new Ad() { Value = 1m }, new Ad() { Value = 1m }];
+            // Bind TotalBudget textbox to TotalBudget UiDecimal
+            Binding binding = new Binding("Value")
+            {
+                Source = TotalBudget,
+                Mode = BindingMode.TwoWay,
+                UpdateSourceTrigger = UpdateSourceTrigger.PropertyChanged
+            };
+            TotalBudgetBox.SetBinding(TextBox.TextProperty, binding);
+            
+            // Bind AgencyHourCost textbox to agency hour cost UiDecimal
+            binding = new Binding("Value")
+            {
+                Source = AgencyHourCost,
+                Mode = BindingMode.TwoWay,
+                UpdateSourceTrigger = UpdateSourceTrigger.PropertyChanged
+            };
+            AgencyHourCostTextbox.SetBinding(TextBox.TextProperty, binding);
+            
+            // Bind starting guess textbox to starting guess UiDecimal
+            binding = new Binding("Value")
+            {
+                Source = StartingGuess,
+                Mode = BindingMode.TwoWay,
+                UpdateSourceTrigger = UpdateSourceTrigger.PropertyChanged
+            };
+            StartingGuessTextBox.SetBinding(TextBox.TextProperty, binding);
+            
+            // Initialize ad budget lists
+            _inHouseAdBudgetsData = [];
             InHouseAdBudgetsDataGrid.ItemsSource = _inHouseAdBudgetsData;
             
-            _thirdPartyAdBudgetsData = [new Ad() { Value = 1m }, new Ad() { Value = 1m }];
+            _thirdPartyAdBudgetsData = [];
             ThirdPartyAdBudgetsDataGrid.ItemsSource = _thirdPartyAdBudgetsData;
-
-            _totalBudget = 25;
-
-            _agencyHourCost = 5;
-
-            _startingGuess = 25;
+            
+            // Initialize preset combobox
+            foreach(var item in Presets.SolverPresets.Keys)
+            {
+                PresetsComboBox.Items.Add(item);
+            }
+            PresetsComboBox.SelectedIndex = 0;
+            
+            // Fill in values from default preset
+            LoadPreset("Default");
         }
         
         /// <summary>
-        /// Wrapper around a <see cref="Value"/> for an ad budget
+        /// Wrapper around a <see cref="decimal"/> for an ad budget
         /// </summary>
-        public class Ad
+        public class Ad 
         {
-            public decimal Value { get; init; }
+            public decimal Budget { get; init; }
+        }
+        
+
+        /// <summary>
+        /// Updates the UI with values from a predefined set of solver arguments
+        /// </summary>
+        /// <param name="presetName">Name of a defined solver argument preset in <see cref="Presets.SolverPresets"/></param>
+        /// <param name="firstLoad">Set when run the first time</param>
+        private void LoadPreset(string presetName, bool firstLoad = false)
+        {
+            if (!Presets.SolverPresets.TryGetValue(presetName, out var args)) return;
+           
+            // Numeric textbox values
+            TotalBudget.Value = args.MaxBudget;
+            AgencyHourCost.Value = args.HourCost;
+            StartingGuess.Value = args.StartingGuess;
+            
+            // Populate sliders
+            AgencyFeeSliderValue.Value = args.AgencyFeePercent;
+            ThirdPartyFeeSliderValue.Value = args.ThirdPartyFeePercent;
+            
+            // Populate checkbox
+            IsThirdPartyCheckbox.IsChecked = args.NewAdIsThirdParty;
+            
+            // Populate data grids
+            _inHouseAdBudgetsData.Clear();
+            foreach(var item in args.InHouseAdBudgets.Select(x => new Ad() { Budget = x } ))
+            {
+                _inHouseAdBudgetsData.Add(item);
+            }
+            _thirdPartyAdBudgetsData.Clear();
+            foreach(var item in  args.ThirdPartyAdBudgets.Select(x => new Ad() { Budget = x } ))
+            {
+                _thirdPartyAdBudgetsData .Add(item);
+            }
+            
+            // Clear previous results
+            NewAdBudgetTextBox.Text = "";
+            TotalSpentTextBox.Text = "";
+        }
+
+        /// <summary>
+        /// Called when LoadPreset button is clicked
+        /// </summary>
+        private void LoadPresetButton_Click(object sender, RoutedEventArgs e)
+        {
+            LoadPreset(PresetsComboBox.Text, false);
         }
     
         /// <summary>
@@ -105,36 +143,43 @@ namespace Dentsu_Software_Engineer_Challenge
         /// </summary>
         private void CalculateButton_Click(object sender, RoutedEventArgs e)
         {
+            // Retrieve parameters and set up a SolverArgument 
             var arguments = new Solver.SolverArguments(
-                maxBudget: _totalBudget,
-                startingGuess: _startingGuess,
-                inHouseAdBudgets: _inHouseAdBudgetsData.Select(x => x.Value).ToArray(),
-                thirdPartyAdBudgets: _thirdPartyAdBudgetsData.Select(x => x.Value).ToArray(),
+                maxBudget: TotalBudget.Value,
+                startingGuess: StartingGuess.Value,
+                inHouseAdBudgets: _inHouseAdBudgetsData.Select(x => x.Budget).ToArray(),
+                thirdPartyAdBudgets: _thirdPartyAdBudgetsData.Select(x => x.Budget).ToArray(),
                 agencyFeePercent: Convert.ToSingle(AgencyFeeSliderValue.Value),
                 thirdPartyFeePercent: Convert.ToSingle(ThirdPartyFeeSliderValue.Value),
-                hourCost: _agencyHourCost,
+                hourCost: AgencyHourCost.Value,
                 newAdIsThirdParty: IsThirdPartyCheckbox.IsChecked != null && IsThirdPartyCheckbox.IsChecked.Value,
-                maxIterations: 20,
                 debug: true);
             
+            // Run Goal Seek solver on worker thread
             var worker = new BackgroundWorker();
             worker.DoWork += worker_RunSolver;
             worker.RunWorkerCompleted += worker_SolverCompleted;
             worker.RunWorkerAsync(arguments);
         }
 
+        /// <summary>
+        /// Worker thread running Goal Seek solver on background thread
+        /// </summary>
         private static void worker_RunSolver(object? sender, DoWorkEventArgs e)
         {
             var args = (Solver.SolverArguments) (e.Argument ?? throw new InvalidOperationException());
             
             e.Result = new Solver(args).GoalSeek();
         }
-
+        
+        /// <summary>
+        /// Called when worker is complete and has returned a <see cref="Solver.SolverResult"/>
+        /// </summary>
         private void worker_SolverCompleted(object? sender, RunWorkerCompletedEventArgs e)
         {
             var result = (Solver.SolverResult) (e.Result ?? throw new InvalidOperationException());
             NewAdBudgetTextBox.Text = result.NewAdBudget.ToString(CultureInfo.InvariantCulture);
-            TotalSpentTextBox.Text  = result.TotalSpent.ToString(CultureInfo.InvariantCulture);
+            TotalSpentTextBox.Text  = decimal.Round(result.TotalSpent, 2).ToString(CultureInfo.InvariantCulture);
             
         }
 

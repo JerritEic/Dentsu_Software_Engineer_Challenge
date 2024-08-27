@@ -1,3 +1,4 @@
+using System.Diagnostics;
 using Dentsu_Software_Engineer_Challenge;
 using Serilog;
 
@@ -17,17 +18,7 @@ namespace Tests
                 .WriteTo.Console()
                 .CreateLogger();
             
-            _defaultArgs = new Solver.SolverArguments(
-                maxBudget: 25m,
-                startingGuess: 25m,
-                inHouseAdBudgets: [1m, 1m],
-                thirdPartyAdBudgets: [1m, 1m],
-                agencyFeePercent: 5,
-                thirdPartyFeePercent: 5,
-                hourCost: 5m,
-                newAdIsThirdParty: false,
-                maxIterations: 20,
-                debug: true);
+            _defaultArgs = Presets.SolverPresets["Default"]; 
         }
         
         [Test]
@@ -55,7 +46,7 @@ namespace Tests
         [TestCase(1000)]
         public void IsMaxBudgetAllocatedWithNoFees(decimal maxBudget)
         {
-            var args = Solver.SolverArguments.Empty();
+            var args = Presets.SolverPresets["Empty"]; 
             args.MaxBudget = maxBudget;
 
             var solver = new Solver(args);
@@ -124,8 +115,8 @@ namespace Tests
         public void IsAdBudgetCorrect(decimal maxBudget, int[] inHouseAdBudgetsInt, int[] thirdPartyAdBudgetsInt )
         {
             var args = _defaultArgs;
-            args.InHouseAdSum = Array.ConvertAll(inHouseAdBudgetsInt, Convert.ToDecimal).Sum();
-            args.ThirdPartyAdSum = Array.ConvertAll(inHouseAdBudgetsInt, Convert.ToDecimal).Sum();
+            args.InHouseAdBudgets = Array.ConvertAll(inHouseAdBudgetsInt, Convert.ToDecimal);
+            args.ThirdPartyAdBudgets = Array.ConvertAll(inHouseAdBudgetsInt, Convert.ToDecimal);
 
 
             var solver = new Solver(args);
