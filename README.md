@@ -15,7 +15,7 @@ The build result will be in `./Dentsu_Software_Engineer_Challenge/bin/Debug/net8
 ## Usage
 The executable will open a UI with various form controls to specify budgets, fees, and costs.  
 
-![UI](../Resources/1.png)
+![UI](./Resources/1.png)
 
 In the top left, a dropdown can be used to specifies a parameter preset, which can then
 be applied by clicking the `Load Preset` button. 
